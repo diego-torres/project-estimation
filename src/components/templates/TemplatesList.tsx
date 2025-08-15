@@ -14,7 +14,7 @@ import {
 import { ExclamationTriangleIcon } from '@patternfly/react-icons';
 import { api } from '../../lib/api';
 import { RepoRef } from '../../lib/github';
-import { ProjectTemplate } from '../../models/types';
+import { ProjectTemplate, uid } from '../../models/types';
 
 interface LoadedTemplate {
   repo: RepoRef;
@@ -24,10 +24,18 @@ interface LoadedTemplate {
 export default function TemplatesList() {
   const [repo, setRepo] = useState('');
   const [templates, setTemplates] = useState<LoadedTemplate[]>([]);
+  const [creating, setCreating] = useState<RepoRef | null>(null);
+  const [newName, setNewName] = useState('');
+  const [newDesc, setNewDesc] = useState('');
 
   const load = async () => {
     const [owner, name] = repo.split('/');
     if (!owner || !name) return;
+    const empty = await api.isRepoEmpty({ owner, repo: name });
+    if (empty) {
+      setCreating({ owner, repo: name });
+      return;
+    }
     const template = await api.getTemplate({ owner, repo: name });
     setTemplates((prev) => [...prev, { repo: { owner, repo: name }, template }]);
     const meta = await api.loadMeta();
@@ -60,6 +68,34 @@ export default function TemplatesList() {
           </ToolbarItem>
         </ToolbarContent>
       </Toolbar>
+      {creating && (
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
+            if (!creating) return;
+            const template: ProjectTemplate = { id: uid(), name: newName, description: newDesc, defaults: {} };
+            await api.initTemplate(creating, template);
+            setTemplates((prev) => [...prev, { repo: creating, template }]);
+            setCreating(null);
+            setNewName('');
+            setNewDesc('');
+          }}
+        >
+          <TextInput
+            aria-label="template name"
+            value={newName}
+            onChange={(_e, v) => setNewName(v)}
+            placeholder="Template name"
+          />
+          <TextInput
+            aria-label="template description"
+            value={newDesc}
+            onChange={(_e, v) => setNewDesc(v)}
+            placeholder="Description"
+          />
+          <Button type="submit">Create template</Button>
+        </form>
+      )}
       {templates.length === 0 ? (
         <Bullseye>
           <EmptyState titleText="No templates loaded" icon={ExclamationTriangleIcon}>

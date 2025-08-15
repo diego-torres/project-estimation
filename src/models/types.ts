@@ -65,6 +65,8 @@ export interface Risk { id: string; description: string; mitigation?: string }
 export interface OutOfScope { id: string; description: string }
 export interface Prereq { id: string; description: string }
 export interface TrainingRec { id: string; audience: string; topic: string; format: string }
+export interface TeamRole { id: string; name: string; responsibilities?: string }
+export interface TeamModeling { id: string; role: string; weeks: number }
 
 export type ProjectStatus = "created" | "level of effort completed" | "peer verified" | "delivered to client";
 
@@ -80,6 +82,8 @@ export interface ProjectTemplate {
     outOfScope: OutOfScope[];
     prereqs: Prereq[];
     training: TrainingRec[];
+    teamRoles: TeamRole[];
+    teamModeling: TeamModeling[];
   }>;
 }
 
@@ -96,6 +100,8 @@ export interface Project {
   outOfScope: OutOfScope[];
   prereqs: Prereq[];
   training: TrainingRec[];
+  teamRoles: TeamRole[];
+  teamModeling: TeamModeling[];
   sharing: Sharing;
   createdAt: string;
   updatedAt: string;

@@ -42,6 +42,43 @@ export async function loadOpportunity(octokit: Octokit, repo: RepoRef): Promise<
   return fetchJson<OpportunityInfo>(octokit, repo, 'opportunity.json');
 }
 
+export async function isRepoEmpty(octokit: Octokit, repo: RepoRef): Promise<boolean> {
+  try {
+    await octokit.repos.listCommits({ owner: repo.owner, repo: repo.repo, per_page: 1 });
+    return false;
+  } catch (err: any) {
+    if (err.status === 409) return true; // Git Repository is empty
+    if (err.status === 404) return true; // repo not initialized
+    throw err;
+  }
+}
+
+export async function initTemplateRepo(
+  octokit: Octokit,
+  repo: RepoRef,
+  template: ProjectTemplate,
+): Promise<void> {
+  const branch = repo.ref || 'main';
+  const content = Buffer.from(JSON.stringify(template, null, 2)).toString('base64');
+  const readme = Buffer.from('# Estimation Template\n\nThis repository stores a project estimation template.').toString('base64');
+  await octokit.repos.createOrUpdateFileContents({
+    owner: repo.owner,
+    repo: repo.repo,
+    path: 'template.json',
+    message: 'chore: add template.json',
+    content,
+    branch,
+  });
+  await octokit.repos.createOrUpdateFileContents({
+    owner: repo.owner,
+    repo: repo.repo,
+    path: 'README.md',
+    message: 'docs: add template README',
+    content: readme,
+    branch,
+  });
+}
+
 export async function copyTemplateToRepo(
   octokit: Octokit,
   source: RepoRef,

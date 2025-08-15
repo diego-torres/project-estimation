@@ -46,6 +46,8 @@ export const seedTemplate: ProjectTemplate = {
     outOfScope: [ { id: uid(), description: "Production support beyond hypercare" } ],
     prereqs: [ { id: uid(), description: "Access to source repo and CI pipeline" } ],
     training: [ { id: uid(), audience: "Ops", topic: "OpenShift Admin", format: "Instructor-led" } ],
+    teamRoles: [ { id: uid(), name: "Architect", responsibilities: "Overall solution design" } ],
+    teamModeling: [ { id: uid(), role: "Architect", weeks: 12 } ],
   },
 };
 
@@ -102,6 +104,8 @@ export function cloneIntoProjectFromTemplate(t: ProjectTemplate, users = seedUse
     outOfScope: defaults.outOfScope ?? [],
     prereqs: defaults.prereqs ?? [],
     training: defaults.training ?? [],
+    teamRoles: defaults.teamRoles ?? [],
+    teamModeling: defaults.teamModeling ?? [],
     sharing: {
       owners: [users[0].id],
       participants: [users[1].id],

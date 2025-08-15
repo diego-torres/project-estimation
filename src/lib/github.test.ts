@@ -1,4 +1,4 @@
-import { copyTemplateToRepo } from './github';
+import { copyTemplateToRepo, initTemplateRepo } from './github';
 
 const encodedEmpty = Buffer.from('{}').toString('base64');
 
@@ -43,6 +43,34 @@ describe('copyTemplateToRepo', () => {
       message: 'chore: add template.json',
       content: encodedEmpty,
       branch: 'dev',
+    });
+  });
+});
+
+describe('initTemplateRepo', () => {
+  it('creates template.json and README', async () => {
+    const createOrUpdateFileContents = jest.fn().mockResolvedValue({});
+    const repos = { createOrUpdateFileContents };
+    await initTemplateRepo(
+      { repos } as any,
+      { owner: 'o', repo: 'r' },
+      { id: '1', name: 'T', defaults: {} },
+    );
+    expect(createOrUpdateFileContents).toHaveBeenCalledWith({
+      owner: 'o',
+      repo: 'r',
+      path: 'template.json',
+      message: 'chore: add template.json',
+      content: expect.any(String),
+      branch: 'main',
+    });
+    expect(createOrUpdateFileContents).toHaveBeenCalledWith({
+      owner: 'o',
+      repo: 'r',
+      path: 'README.md',
+      message: 'docs: add template README',
+      content: expect.any(String),
+      branch: 'main',
     });
   });
 });
