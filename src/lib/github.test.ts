@@ -1,5 +1,5 @@
 import { Buffer } from "buffer";
-import { copyTemplateToRepo, initTemplateRepo } from "./github";
+import { copyTemplateToRepo, initTemplateRepo, saveTemplateRepo } from "./github";
 
 const encodedEmpty = Buffer.from("{}").toString("base64");
 
@@ -80,6 +80,26 @@ describe("initTemplateRepo", () => {
       repo: "r",
       path: "README.md",
       message: "docs: add template README",
+      content: expect.any(String),
+      branch: "main",
+    });
+  });
+});
+
+describe("saveTemplateRepo", () => {
+  it("updates template.json", async () => {
+    const createOrUpdateFileContents = jest.fn().mockResolvedValue({});
+    const repos = { createOrUpdateFileContents };
+    await saveTemplateRepo(
+      { repos } as any,
+      { owner: "o", repo: "r" },
+      { id: "1", name: "T", defaults: {} },
+    );
+    expect(createOrUpdateFileContents).toHaveBeenCalledWith({
+      owner: "o",
+      repo: "r",
+      path: "template.json",
+      message: "chore: update template.json",
       content: expect.any(String),
       branch: "main",
     });

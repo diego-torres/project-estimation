@@ -1,4 +1,4 @@
-import { loadOpportunity, loadTemplate, copyTemplateToRepo, RepoRef, isRepoEmpty, initTemplateRepo } from './github';
+import { loadOpportunity, loadTemplate, copyTemplateToRepo, RepoRef, isRepoEmpty, initTemplateRepo, saveTemplateRepo } from './github';
 import { loadMeta, saveMeta, UserMeta } from './persistence';
 import { ProjectTemplate, OpportunityInfo } from '../models/types';
 
@@ -8,6 +8,7 @@ export interface API {
   copyTemplate(src: RepoRef, dest: RepoRef, files?: string[]): Promise<void>;
   isRepoEmpty(repo: RepoRef): Promise<boolean>;
   initTemplate(repo: RepoRef, template: ProjectTemplate): Promise<void>;
+  saveTemplate(repo: RepoRef, template: ProjectTemplate): Promise<void>;
   loadMeta(): Promise<UserMeta>;
   saveMeta(update: Partial<UserMeta>): Promise<void>;
 }
@@ -27,6 +28,7 @@ export const api: API = {
   copyTemplate: async (src, dest, files) => copyTemplateToRepo(await getOctokit(), src, dest, files),
   isRepoEmpty: async (repo) => isRepoEmpty(await getOctokit(), repo),
   initTemplate: async (repo, template) => initTemplateRepo(await getOctokit(), repo, template),
+  saveTemplate: async (repo, template) => saveTemplateRepo(await getOctokit(), repo, template),
   loadMeta,
   saveMeta,
 };
