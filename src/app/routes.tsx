@@ -28,7 +28,7 @@ export const getRoutes = (
     title: 'Estimator | Home',
   },
   {
-    element: db ? <ProjectsList db={db} /> : <></>,
+    element: <ProjectsList />, // Projects now load from git repositories
     exact: true,
     label: 'Projects',
     path: '/projects',
@@ -47,11 +47,7 @@ export const getRoutes = (
     title: 'Estimator | Project Detail',
   },
   {
-    element: db ? (
-      <TemplatesList db={db} onClone={(id) => { window.location.href = `/projects/new?templateId=${id}`; }} />
-    ) : (
-      <></>
-    ),
+    element: <TemplatesList />, // Templates now load from git repositories
     exact: true,
     label: 'Templates',
     path: '/templates',
