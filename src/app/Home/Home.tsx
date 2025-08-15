@@ -53,7 +53,15 @@ For help, use Slack: #help-consulting-project-estimation.`}
             </Tab>
             <Tab eventKey={1} title="Initial offering creation">
               <pre style={{ whiteSpace: 'pre-wrap' }}>
-{`Use the latest template at https://red.ht/ConsultingScopingTemplate.
+{`Important: Before using the Project Estimation App or its API to add files to a GitHub repository, you must initialize the repository with at least one commit (such as a README or .gitignore file). The GitHub API cannot create files in a repo with no branch.
+
+To initialize a repository:
+- Manually create a README or any file in the repo via the GitHub web UI, or
+- Use the GitHub API to create an initial commit/branch.
+
+Once the repo is initialized, you will be able to create/update files as expected.
+
+Use the latest template at https://red.ht/ConsultingScopingTemplate.
 Organize tabs from left to right as you complete them.
 Add participants, fill in opportunity info, and normalize the document title.
 Check Portfolio Hub for existing offerings and import if applicable.

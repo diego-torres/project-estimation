@@ -35,6 +35,10 @@ async function fetchJson<T>(
     return JSON.parse(content) as T;
   } catch (err: any) {
     if (err.status === 404) {
+      // Log repo details for debugging
+      console.error(
+        `GitHub API 404: repo owner='${repo.owner}', repo='${repo.repo}', path='${path}'`
+      );
       // File doesn't exist yet
       return {} as T;
     }

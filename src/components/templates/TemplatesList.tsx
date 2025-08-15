@@ -82,7 +82,7 @@ export default function TemplatesList() {
         </ToolbarContent>
       </Toolbar>
       <Modal
-        title="Create New Template"
+        title="Create Template"
         isOpen={isModalOpen}
         onClose={() => {
           setIsModalOpen(false);
@@ -90,7 +90,7 @@ export default function TemplatesList() {
           setNewName("");
           setNewDesc("");
         }}
-        variant={ModalVariant.small}
+        variant={ModalVariant.medium}
       >
         <Form
           onSubmit={async (e) => {
@@ -111,7 +111,7 @@ export default function TemplatesList() {
           }}
           isWidthLimited
         >
-          <FormGroup label="Template Name" isRequired fieldId="template-name">
+          <FormGroup label="Template Name" isRequired fieldId="template-name" style={{ marginTop: 62, marginLeft: 40 }}>
             <TextInput
               id="template-name"
               aria-label="template name"
@@ -120,7 +120,7 @@ export default function TemplatesList() {
               placeholder="Template name"
             />
           </FormGroup>
-          <FormGroup label="Description" fieldId="template-desc">
+          <FormGroup label="Description" fieldId="template-desc" style={{ marginLeft: 40 }}>
             <TextInput
               id="template-desc"
               aria-label="template description"
@@ -129,7 +129,7 @@ export default function TemplatesList() {
               placeholder="Description"
             />
           </FormGroup>
-          <ActionGroup>
+          <ActionGroup style={{marginLeft: 40 }}>
             <Button type="submit" variant="primary">
               Create template
             </Button>
