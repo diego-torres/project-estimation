@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Modal } from '@patternfly/react-core';
 import {
   Button,
   Bullseye,
@@ -27,6 +28,7 @@ export default function TemplatesList() {
   const [creating, setCreating] = useState<RepoRef | null>(null);
   const [newName, setNewName] = useState('');
   const [newDesc, setNewDesc] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const load = async () => {
     const [owner, name] = repo.split('/');
@@ -34,6 +36,7 @@ export default function TemplatesList() {
     const empty = await api.isRepoEmpty({ owner, repo: name });
     if (empty) {
       setCreating({ owner, repo: name });
+      setIsModalOpen(true);
       return;
     }
     const template = await api.getTemplate({ owner, repo: name });
@@ -68,7 +71,18 @@ export default function TemplatesList() {
           </ToolbarItem>
         </ToolbarContent>
       </Toolbar>
-      {creating && (
+      <Modal
+        title="Create New Template"
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setCreating(null);
+          setNewName('');
+          setNewDesc('');
+        }}
+        variant="small"
+        style={{ minHeight: '350px', minWidth: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+      >
         <form
           onSubmit={async (e) => {
             e.preventDefault();
@@ -79,15 +93,21 @@ export default function TemplatesList() {
             setCreating(null);
             setNewName('');
             setNewDesc('');
+            setIsModalOpen(false);
           }}
+          style={{ display: 'flex', flexDirection: 'column', gap: '1.5em', marginTop: '1em' }}
         >
+          <label htmlFor="template-name" style={{ fontWeight: 'bold' }}>Template Name</label>
           <TextInput
+            id="template-name"
             aria-label="template name"
             value={newName}
             onChange={(_e, v) => setNewName(v)}
             placeholder="Template name"
           />
+          <label htmlFor="template-desc" style={{ fontWeight: 'bold' }}>Description</label>
           <TextInput
+            id="template-desc"
             aria-label="template description"
             value={newDesc}
             onChange={(_e, v) => setNewDesc(v)}
@@ -95,7 +115,7 @@ export default function TemplatesList() {
           />
           <Button type="submit">Create template</Button>
         </form>
-      )}
+      </Modal>
       {templates.length === 0 ? (
         <Bullseye>
           <EmptyState titleText="No templates loaded" icon={ExclamationTriangleIcon}>
