@@ -1,77 +1,75 @@
 import * as React from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { Dashboard } from '@app/Dashboard/Dashboard';
-import { Support } from '@app/Support/Support';
-import { GeneralSettings } from '@app/Settings/General/GeneralSettings';
-import { ProfileSettings } from '@app/Settings/Profile/ProfileSettings';
 import { NotFound } from '@app/NotFound/NotFound';
+import { ProjectsList, NewProject, ProjectDetail } from '../components/projects';
+import { TemplatesList, TemplateEditor } from '../components/templates';
+import { DB } from '../models/types';
 
 export interface IAppRoute {
   label?: string; // Excluding the label will exclude the route from the nav sidebar in AppLayout
-  /* eslint-disable @typescript-eslint/no-explicit-any */
   element: React.ReactElement;
-  /* eslint-enable @typescript-eslint/no-explicit-any */
   exact?: boolean;
   path: string;
   title: string;
-  routes?: undefined;
 }
 
-export interface IAppRouteGroup {
-  label: string;
-  routes: IAppRoute[];
-}
+export type AppRouteConfig = IAppRoute;
 
-export type AppRouteConfig = IAppRoute | IAppRouteGroup;
-
-const routes: AppRouteConfig[] = [
+export const getRoutes = (
+  db: DB | null,
+  persist: ((u: (d: DB) => void) => void) | null,
+): AppRouteConfig[] => [
   {
     element: <Dashboard />,
     exact: true,
     label: 'Dashboard',
     path: '/',
-    title: 'PatternFly Seed | Main Dashboard',
+    title: 'Estimator | Dashboard',
   },
   {
-    element: <Support />,
+    element: db ? <ProjectsList db={db} /> : <></>,
     exact: true,
-    label: 'Support',
-    path: '/support',
-    title: 'PatternFly Seed | Support Page',
+    label: 'Projects',
+    path: '/projects',
+    title: 'Estimator | Projects',
   },
   {
-    label: 'Settings',
-    routes: [
-      {
-        element: <GeneralSettings />,
-        exact: true,
-        label: 'General',
-        path: '/settings/general',
-        title: 'PatternFly Seed | General Settings',
-      },
-      {
-        element: <ProfileSettings />,
-        exact: true,
-        label: 'Profile',
-        path: '/settings/profile',
-        title: 'PatternFly Seed | Profile Settings',
-      },
-    ],
+    element: db && persist ? <NewProject db={db} persist={persist} /> : <></>,
+    exact: true,
+    path: '/projects/new',
+    title: 'Estimator | New Project',
+  },
+  {
+    element: db ? <ProjectDetail db={db} /> : <></>,
+    exact: true,
+    path: '/projects/:id',
+    title: 'Estimator | Project Detail',
+  },
+  {
+    element: db ? (
+      <TemplatesList db={db} onClone={(id) => { window.location.href = `/projects/new?templateId=${id}`; }} />
+    ) : (
+      <></>
+    ),
+    exact: true,
+    label: 'Templates',
+    path: '/templates',
+    title: 'Estimator | Templates',
+  },
+  {
+    element: db && persist ? <TemplateEditor db={db} persist={persist} /> : <></>,
+    exact: true,
+    path: '/templates/:id',
+    title: 'Estimator | Template Editor',
   },
 ];
 
-const flattenedRoutes: IAppRoute[] = routes.reduce(
-  (flattened, route) => [...flattened, ...(route.routes ? route.routes : [route])],
-  [] as IAppRoute[],
-);
-
-const AppRoutes = (): React.ReactElement => (
+export const AppRoutes = ({ routes }: { routes: AppRouteConfig[] }): React.ReactElement => (
   <Routes>
-    {flattenedRoutes.map(({ path, element }, idx) => (
+    {routes.map(({ path, element }, idx) => (
       <Route path={path} element={element} key={idx} />
     ))}
-    <Route element={<NotFound />} />
+    <Route path="*" element={<NotFound />} />
   </Routes>
 );
-
-export { AppRoutes, routes };
