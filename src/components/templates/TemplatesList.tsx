@@ -1,6 +1,10 @@
-import React, { useState } from 'react';
-import { Modal } from '@patternfly/react-core';
+import React, { useState } from "react";
 import {
+  Modal,
+  Form,
+  FormGroup,
+  ActionGroup,
+  ModalVariant,
   Button,
   Bullseye,
   EmptyState,
@@ -11,11 +15,11 @@ import {
   Toolbar,
   ToolbarContent,
   ToolbarItem,
-} from '@patternfly/react-core';
-import { ExclamationTriangleIcon } from '@patternfly/react-icons';
-import { api } from '../../lib/api';
-import { RepoRef } from '../../lib/github';
-import { ProjectTemplate, uid } from '../../models/types';
+} from "@patternfly/react-core";
+import { ExclamationTriangleIcon } from "@patternfly/react-icons";
+import { api } from "../../lib/api";
+import { RepoRef } from "../../lib/github";
+import { ProjectTemplate, uid } from "../../models/types";
 
 interface LoadedTemplate {
   repo: RepoRef;
@@ -23,15 +27,15 @@ interface LoadedTemplate {
 }
 
 export default function TemplatesList() {
-  const [repo, setRepo] = useState('');
+  const [repo, setRepo] = useState("");
   const [templates, setTemplates] = useState<LoadedTemplate[]>([]);
   const [creating, setCreating] = useState<RepoRef | null>(null);
-  const [newName, setNewName] = useState('');
-  const [newDesc, setNewDesc] = useState('');
+  const [newName, setNewName] = useState("");
+  const [newDesc, setNewDesc] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const load = async () => {
-    const [owner, name] = repo.split('/');
+    const [owner, name] = repo.split("/");
     if (!owner || !name) return;
     const empty = await api.isRepoEmpty({ owner, repo: name });
     if (empty) {
@@ -40,16 +44,22 @@ export default function TemplatesList() {
       return;
     }
     const template = await api.getTemplate({ owner, repo: name });
-    setTemplates((prev) => [...prev, { repo: { owner, repo: name }, template }]);
+    setTemplates((prev) => [
+      ...prev,
+      { repo: { owner, repo: name }, template },
+    ]);
     const meta = await api.loadMeta();
-    const recents = [`${owner}/${name}`, ...meta.recents.filter((r) => r !== `${owner}/${name}`)].slice(0, 5);
+    const recents = [
+      `${owner}/${name}`,
+      ...meta.recents.filter((r) => r !== `${owner}/${name}`),
+    ].slice(0, 5);
     await api.saveMeta({ recents });
   };
 
   const handleClone = async (t: LoadedTemplate) => {
-    const dest = window.prompt('Destination repo (owner/name)');
+    const dest = window.prompt("Destination repo (owner/name)");
     if (!dest) return;
-    const [owner, name] = dest.split('/');
+    const [owner, name] = dest.split("/");
     if (!owner || !name) return;
     await api.copyTemplate(t.repo, { owner, repo: name });
   };
@@ -77,49 +87,64 @@ export default function TemplatesList() {
         onClose={() => {
           setIsModalOpen(false);
           setCreating(null);
-          setNewName('');
-          setNewDesc('');
+          setNewName("");
+          setNewDesc("");
         }}
-        variant="small"
-        style={{ minHeight: '350px', minWidth: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        variant={ModalVariant.small}
       >
-        <form
+        <Form
           onSubmit={async (e) => {
             e.preventDefault();
             if (!creating) return;
-            const template: ProjectTemplate = { id: uid(), name: newName, description: newDesc, defaults: {} };
+            const template: ProjectTemplate = {
+              id: uid(),
+              name: newName,
+              description: newDesc,
+              defaults: {},
+            };
             await api.initTemplate(creating, template);
             setTemplates((prev) => [...prev, { repo: creating, template }]);
             setCreating(null);
-            setNewName('');
-            setNewDesc('');
+            setNewName("");
+            setNewDesc("");
             setIsModalOpen(false);
           }}
-          style={{ display: 'flex', flexDirection: 'column', gap: '1.5em', marginTop: '1em' }}
+          isWidthLimited
         >
-          <label htmlFor="template-name" style={{ fontWeight: 'bold' }}>Template Name</label>
-          <TextInput
-            id="template-name"
-            aria-label="template name"
-            value={newName}
-            onChange={(_e, v) => setNewName(v)}
-            placeholder="Template name"
-          />
-          <label htmlFor="template-desc" style={{ fontWeight: 'bold' }}>Description</label>
-          <TextInput
-            id="template-desc"
-            aria-label="template description"
-            value={newDesc}
-            onChange={(_e, v) => setNewDesc(v)}
-            placeholder="Description"
-          />
-          <Button type="submit">Create template</Button>
-        </form>
+          <FormGroup label="Template Name" isRequired fieldId="template-name">
+            <TextInput
+              id="template-name"
+              aria-label="template name"
+              value={newName}
+              onChange={(_e, v) => setNewName(v)}
+              placeholder="Template name"
+            />
+          </FormGroup>
+          <FormGroup label="Description" fieldId="template-desc">
+            <TextInput
+              id="template-desc"
+              aria-label="template description"
+              value={newDesc}
+              onChange={(_e, v) => setNewDesc(v)}
+              placeholder="Description"
+            />
+          </FormGroup>
+          <ActionGroup>
+            <Button type="submit" variant="primary">
+              Create template
+            </Button>
+          </ActionGroup>
+        </Form>
       </Modal>
       {templates.length === 0 ? (
         <Bullseye>
-          <EmptyState titleText="No templates loaded" icon={ExclamationTriangleIcon}>
-            <EmptyStateBody>Enter a repository to load a template.</EmptyStateBody>
+          <EmptyState
+            titleText="No templates loaded"
+            icon={ExclamationTriangleIcon}
+          >
+            <EmptyStateBody>
+              Enter a repository to load a template.
+            </EmptyStateBody>
             <EmptyStateFooter>
               <Button onClick={load}>Load template</Button>
             </EmptyStateFooter>
@@ -155,4 +180,3 @@ export default function TemplatesList() {
     </PageSection>
   );
 }
-
