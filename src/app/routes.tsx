@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Route, Routes } from 'react-router-dom';
-import { Dashboard } from '@app/Dashboard/Dashboard';
+import { Home } from '@app/Home/Home';
 import { NotFound } from '@app/NotFound/NotFound';
 import { ProjectsList, NewProject, ProjectDetail } from '../components/projects';
 import { TemplatesList, TemplateEditor } from '../components/templates';
@@ -21,11 +21,11 @@ export const getRoutes = (
   persist: ((u: (d: DB) => void) => void) | null,
 ): AppRouteConfig[] => [
   {
-    element: <Dashboard />,
+    element: <Home />, 
     exact: true,
-    label: 'Dashboard',
+    label: 'Home',
     path: '/',
-    title: 'Estimator | Dashboard',
+    title: 'Estimator | Home',
   },
   {
     element: db ? <ProjectsList db={db} /> : <></>,

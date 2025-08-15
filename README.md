@@ -18,7 +18,7 @@ Project Estimation App helps teams create, share, and manage project estimates u
 - Estimate tasks using PERT and other models
 - Share projects with team members
 - Template-based project creation
-- Dashboard and reporting
+- Home and reporting
 
 ## Getting Started
 ### Prerequisites
@@ -52,10 +52,11 @@ public/
 src/
 	App.tsx
 	index.tsx
-	components/
-		AppShell.tsx
-		Dashboard.tsx
-		projects/
+        components/
+                AppShell.tsx
+                Home/
+                        Home.tsx
+                projects/
 			...
 		templates/
 			...
