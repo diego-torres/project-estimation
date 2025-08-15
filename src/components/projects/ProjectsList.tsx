@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import { Badge, Button, Bullseye, EmptyState, EmptyStateBody, EmptyStateFooter, EmptyStateHeader, EmptyStateIcon, MenuToggle, PageSection, Select, SelectList, SelectOption, Toolbar, ToolbarContent, ToolbarItem } from "@patternfly/react-core";
-import { TableComposable, Caption, Thead, Tr, Th, Tbody, Td } from "@patternfly/react-table";
+import { Badge, Button, Bullseye, EmptyState, EmptyStateBody, EmptyStateFooter, MenuToggle, PageSection, Select, SelectList, SelectOption, Toolbar, ToolbarContent, ToolbarItem } from "@patternfly/react-core";
 import { ExclamationTriangleIcon, PlusCircleIcon } from "@patternfly/react-icons";
 import { Link, useNavigate } from "react-router-dom";
 import { DB, ProjectStatus } from "../../models/types";
@@ -28,27 +27,28 @@ export default function ProjectsList({ db }: { db: DB }) {
 
       {filtered.length === 0 ? (
         <Bullseye>
-          <EmptyState>
-            <EmptyStateHeader headingLevel="h4" titleText="No projects yet" icon={<EmptyStateIcon icon={ExclamationTriangleIcon} />} />
+          <EmptyState titleText="No projects yet" icon={ExclamationTriangleIcon}>
             <EmptyStateBody>Start by creating a project. You can base it on a template.</EmptyStateBody>
-            <EmptyStateFooter><Button onClick={() => navigate('/projects/new')}>Create project</Button></EmptyStateFooter>
+            <EmptyStateFooter>
+              <Button onClick={() => navigate('/projects/new')}>Create project</Button>
+            </EmptyStateFooter>
           </EmptyState>
         </Bullseye>
       ) : (
-        <TableComposable aria-label="Projects table" variant="compact">
-          <Caption>Estimation projects</Caption>
-          <Thead><Tr><Th>Name</Th><Th>Client</Th><Th>Status</Th><Th>Updated</Th></Tr></Thead>
-          <Tbody>
+        <table role="grid" className="pf-v5-c-table pf-m-compact">
+          <caption>Estimation projects</caption>
+          <thead><tr><th>Name</th><th>Client</th><th>Status</th><th>Updated</th></tr></thead>
+          <tbody>
             {filtered.map(p => (
-              <Tr key={p.id}>
-                <Td dataLabel="Name"><Link to={`/projects/${p.id}`}>{p.name}</Link></Td>
-                <Td dataLabel="Client">{p.opportunity.clientName}</Td>
-                <Td dataLabel="Status"><Badge isRead>{p.status}</Badge></Td>
-                <Td dataLabel="Updated">{new Date(p.updatedAt).toLocaleString()}</Td>
-              </Tr>
+              <tr key={p.id}>
+                <td><Link to={`/projects/${p.id}`}>{p.name}</Link></td>
+                <td>{p.opportunity.clientName}</td>
+                <td><Badge isRead>{p.status}</Badge></td>
+                <td>{new Date(p.updatedAt).toLocaleString()}</td>
+              </tr>
             ))}
-          </Tbody>
-        </TableComposable>
+          </tbody>
+        </table>
       )}
     </PageSection>
   );
