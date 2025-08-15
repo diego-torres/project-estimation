@@ -14,7 +14,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "eslint": "eslint --ext .tsx,.js ./src/",
+    "eslint": "eslint --ext .tsx,.ts,.js ./src/",
     "lint": "npm run eslint",
     "format": "prettier --check --write ./src/**/*.{tsx,ts}",
     "type-check": "tsc --noEmit",
