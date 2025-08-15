@@ -3,6 +3,15 @@ jest.mock('@patternfly/react-core/dist/esm/helpers/util', () => ({
   ...jest.requireActual('@patternfly/react-core/dist/esm/helpers/util'),
   getUniqueId: () => 'fixed-id',
 }));
+jest.mock('../lib/api', () => ({
+  api: {
+    getTemplate: jest.fn(),
+    getOpportunity: jest.fn(),
+    copyTemplate: jest.fn(),
+    loadMeta: jest.fn(() => Promise.resolve({ recents: [], prefs: {} })),
+    saveMeta: jest.fn(),
+  },
+}));
 import * as React from 'react';
 import App from '@app/index';
 import { render, screen, act } from '@testing-library/react';
