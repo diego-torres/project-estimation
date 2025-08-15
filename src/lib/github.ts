@@ -108,6 +108,25 @@ export async function initTemplateRepo(
   });
 }
 
+export async function saveTemplateRepo(
+  octokit: Octokit,
+  repo: RepoRef,
+  template: ProjectTemplate,
+): Promise<void> {
+  const branch = repo.ref || "main";
+  const content = Buffer.from(JSON.stringify(template, null, 2)).toString(
+    "base64",
+  );
+  await octokit.repos.createOrUpdateFileContents({
+    owner: repo.owner,
+    repo: repo.repo,
+    path: "template.json",
+    message: "chore: update template.json",
+    content,
+    branch,
+  });
+}
+
 export async function copyTemplateToRepo(
   octokit: Octokit,
   source: RepoRef,

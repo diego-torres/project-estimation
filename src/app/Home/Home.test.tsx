@@ -4,5 +4,5 @@ import { Home } from './Home';
 
 it('renders home landing text', () => {
   render(<Home />);
-  expect(screen.getByText(/Project Estimation App/i)).toBeTruthy();
+  expect(screen.getAllByText(/Project Estimation App/i).length).toBeGreaterThan(0);
 });

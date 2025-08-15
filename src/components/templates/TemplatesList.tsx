@@ -16,7 +16,7 @@ import {
   ToolbarContent,
   ToolbarItem,
 } from "@patternfly/react-core";
-import { ExclamationTriangleIcon } from "@patternfly/react-icons";
+import { ExclamationTriangleIcon, EditAltIcon, CloneIcon } from "@patternfly/react-icons";
 import { api } from "../../lib/api";
 import { RepoRef } from "../../lib/github";
 import { ProjectTemplate, uid } from "../../models/types";
@@ -30,6 +30,7 @@ export default function TemplatesList() {
   const [repo, setRepo] = useState("");
   const [templates, setTemplates] = useState<LoadedTemplate[]>([]);
   const [creating, setCreating] = useState<RepoRef | null>(null);
+  const [editing, setEditing] = useState<LoadedTemplate | null>(null);
   const [newName, setNewName] = useState("");
   const [newDesc, setNewDesc] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -37,13 +38,14 @@ export default function TemplatesList() {
   const load = async () => {
     const [owner, name] = repo.split("/");
     if (!owner || !name) return;
-    const empty = await api.isRepoEmpty({ owner, repo: name });
-    if (empty) {
+    const template = await api.getTemplate({ owner, repo: name });
+    if (!template.id) {
       setCreating({ owner, repo: name });
+      setNewName("");
+      setNewDesc("");
       setIsModalOpen(true);
       return;
     }
-    const template = await api.getTemplate({ owner, repo: name });
     setTemplates((prev) => [
       ...prev,
       { repo: { owner, repo: name }, template },
@@ -64,6 +66,13 @@ export default function TemplatesList() {
     await api.copyTemplate(t.repo, { owner, repo: name });
   };
 
+  const handleEdit = (t: LoadedTemplate) => {
+    setEditing(t);
+    setNewName(t.template.name);
+    setNewDesc(t.template.description || "");
+    setIsModalOpen(true);
+  };
+
   return (
     <PageSection>
       <Toolbar>
@@ -82,11 +91,12 @@ export default function TemplatesList() {
         </ToolbarContent>
       </Toolbar>
       <Modal
-        title="Create Template"
+        title={editing ? "Edit Template" : "Create Template"}
         isOpen={isModalOpen}
         onClose={() => {
           setIsModalOpen(false);
           setCreating(null);
+          setEditing(null);
           setNewName("");
           setNewDesc("");
         }}
@@ -95,16 +105,41 @@ export default function TemplatesList() {
         <Form
           onSubmit={async (e) => {
             e.preventDefault();
-            if (!creating) return;
-            const template: ProjectTemplate = {
-              id: uid(),
-              name: newName,
-              description: newDesc,
-              defaults: {},
-            };
-            await api.initTemplate(creating, template);
-            setTemplates((prev) => [...prev, { repo: creating, template }]);
-            setCreating(null);
+            if (editing) {
+              const updated: ProjectTemplate = {
+                ...editing.template,
+                name: newName,
+                description: newDesc,
+              };
+              await api.saveTemplate(editing.repo, updated);
+              setTemplates((prev) =>
+                prev.map((t) =>
+                  t.repo.owner === editing.repo.owner &&
+                  t.repo.repo === editing.repo.repo
+                    ? { repo: editing.repo, template: updated }
+                    : t,
+                ),
+              );
+              setEditing(null);
+            } else if (creating) {
+              const template: ProjectTemplate = {
+                id: uid(),
+                name: newName,
+                description: newDesc,
+                defaults: {},
+              };
+              await api.initTemplate(creating, template);
+              setTemplates((prev) => [...prev, { repo: creating, template }]);
+              const meta = await api.loadMeta();
+              const recents = [
+                `${creating.owner}/${creating.repo}`,
+                ...meta.recents.filter((r) => r !== `${creating.owner}/${creating.repo}`),
+              ].slice(0, 5);
+              await api.saveMeta({ recents });
+              setCreating(null);
+            } else {
+              return;
+            }
             setNewName("");
             setNewDesc("");
             setIsModalOpen(false);
@@ -131,7 +166,7 @@ export default function TemplatesList() {
           </FormGroup>
           <ActionGroup style={{marginLeft: 40 }}>
             <Button type="submit" variant="primary">
-              Create template
+              {editing ? "Save template" : "Create template"}
             </Button>
           </ActionGroup>
         </Form>
@@ -151,27 +186,48 @@ export default function TemplatesList() {
           </EmptyState>
         </Bullseye>
       ) : (
-        <table role="grid" className="pf-v5-c-table pf-m-compact">
+        <table
+          role="grid"
+          className="pf-v5-c-table"
+          style={{ tableLayout: "fixed", width: "100%" }}
+        >
+          <colgroup>
+            <col style={{ width: "15%" }} />
+            <col style={{ width: "25%" }} />
+            <col style={{ width: "40%" }} />
+            <col style={{ width: "20%" }} />
+          </colgroup>
           <caption>Project templates</caption>
           <thead>
             <tr>
+              <th>Actions</th>
               <th>Name</th>
               <th>Description</th>
               <th>Repository</th>
-              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {templates.map((t) => (
               <tr key={`${t.repo.owner}/${t.repo.repo}`}>
+                <td>
+                  <Button
+                    variant="plain"
+                    aria-label="Edit template"
+                    onClick={() => handleEdit(t)}
+                  >
+                    <EditAltIcon />
+                  </Button>
+                  <Button
+                    variant="plain"
+                    aria-label="Copy template"
+                    onClick={() => handleClone(t)}
+                  >
+                    <CloneIcon />
+                  </Button>
+                </td>
                 <td>{t.template.name}</td>
                 <td>{t.template.description}</td>
                 <td>{`${t.repo.owner}/${t.repo.repo}`}</td>
-                <td>
-                  <Button variant="link" onClick={() => handleClone(t)}>
-                    Copy to repo
-                  </Button>
-                </td>
               </tr>
             ))}
           </tbody>

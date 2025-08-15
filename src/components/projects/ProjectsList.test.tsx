@@ -6,6 +6,11 @@ import ProjectsList from './ProjectsList';
 jest.mock('../../lib/api', () => ({
   api: {
     getOpportunity: jest.fn(),
+    saveTemplate: jest.fn(),
+    initTemplate: jest.fn(),
+    copyTemplate: jest.fn(),
+    getTemplate: jest.fn(),
+    isRepoEmpty: jest.fn(),
     loadMeta: jest.fn(() => Promise.resolve({ recents: [], prefs: {} })),
     saveMeta: jest.fn(),
   },
